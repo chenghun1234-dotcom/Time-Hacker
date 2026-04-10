@@ -28,6 +28,9 @@ jobs:
         with:
           channel: stable
           flutter-version: '3.41.6'
+
+      - name: Flutter clean
+        run: cd frontend && flutter clean
       - name: Ensure web support
         run: cd frontend && flutter create . --platforms web
 
