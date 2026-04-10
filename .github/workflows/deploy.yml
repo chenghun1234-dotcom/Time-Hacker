@@ -1,54 +1,49 @@
-      - name: Debug Flutter version
+name: Deploy Flutter Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    name: Deploy Flutter Web to GitHub Pages
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.41.6'
 
-    on:
-      push:
-        branches:
-          - main
+      - name: Debug Flutter version
+        run: flutter --version
 
-    jobs:
-      build-and-deploy:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v4
-            with:
-              fetch-depth: 0
+      - name: List files for debug
+        run: cd frontend && ls -al
 
-          - name: Set up Flutter
-            uses: subosito/flutter-action@v2
-            with:
-              channel: stable
-              flutter-version: '3.41.6'
+      - name: Clean workspace
+        run: |
+          rm -rf frontend/.dart_tool frontend/.packages frontend/.flutter-plugins frontend/.metadata frontend/build
 
-          - name: Debug Flutter version
-            run: flutter --version
+      - name: Flutter clean
+        run: cd frontend && flutter clean
 
-          - name: List files for debug
-            run: cd frontend && ls -al
-
-          - name: Clean workspace
-            run: |
-              rm -rf frontend/.dart_tool frontend/.packages frontend/.flutter-plugins frontend/.metadata frontend/build
-
-          - name: Flutter clean
-            run: cd frontend && flutter clean
-
-          - name: Ensure web support
-            run: cd frontend && flutter create . --platforms web
-
-          - name: Install dependencies
-            run: cd frontend && flutter pub get
-
-          - name: Build web
-            run: cd frontend && flutter build web
-
-          - name: Deploy to GitHub Pages
-            uses: peaceiris/actions-gh-pages@v4
-            with:
-              github_token: ${{ secrets.GITHUB_TOKEN }}
-              publish_dir: frontend/build/web
       - name: Ensure web support
+        run: cd frontend && flutter create . --platforms web
+
+      - name: Install dependencies
+        run: cd frontend && flutter pub get
+
+      - name: Build web
+        run: cd frontend && flutter build web
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/build/web
