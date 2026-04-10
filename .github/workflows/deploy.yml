@@ -12,10 +12,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: List files for debug
+        run: cd frontend && ls -al
 
       - name: Clean workspace
         run: |
           rm -rf frontend/.dart_tool frontend/.packages frontend/.flutter-plugins frontend/.metadata frontend/build
+      - name: Flutter clean
+        run: cd frontend && flutter clean
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
