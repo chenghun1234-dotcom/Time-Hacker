@@ -27,6 +27,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.41.6'
+      - name: Ensure web support
+        run: cd frontend && flutter create . --platforms web
 
       - name: Install dependencies
         run: cd frontend && flutter pub get
