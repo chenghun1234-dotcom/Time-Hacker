@@ -13,19 +13,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Clean workspace
+        run: |
+          rm -rf frontend/.dart_tool frontend/.packages frontend/.flutter-plugins frontend/.metadata frontend/build
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
       - name: Install dependencies
-        run: flutter pub get
+        run: cd frontend && flutter pub get
 
       - name: Build web
-        run: flutter build web
+        run: cd frontend && flutter build web
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: frontend/build/web
