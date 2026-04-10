@@ -20,8 +20,6 @@ jobs:
       - name: Clean workspace
         run: |
           rm -rf frontend/.dart_tool frontend/.packages frontend/.flutter-plugins frontend/.metadata frontend/build
-      - name: Flutter clean
-        run: cd frontend && flutter clean
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -31,6 +29,7 @@ jobs:
 
       - name: Flutter clean
         run: cd frontend && flutter clean
+
       - name: Ensure web support
         run: cd frontend && flutter create . --platforms web
 
