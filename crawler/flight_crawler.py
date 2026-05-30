@@ -1,13 +1,14 @@
-def crawl_flight_prices():
 import json
 import os
 from datetime import datetime
 import pytz
 from playwright.sync_api import sync_playwright
 
-# 1. 타겟 설정 (인천 ICN -> 도쿄 NRT, 임의의 날짜)
+ # 1. 타겟 설정 (인천 ICN -> 도쿄 NRT, 임의의 날짜)
 TARGET_URL = "https://www.google.com/travel/flights?q=Flights%20to%20NRT%20from%20ICN%20on%202026-05-15"
-DATA_FILE = "flight_pricing_history.json"
+# 현재 스크립트 파일 경로 기준으로 데이터 파일 경로 설정
+script_dir = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(script_dir, "flight_pricing_history.json")
 
 def get_lowest_flight_price():
     """Playwright를 이용해 실시간 최저가 항공권 가격을 스크래핑합니다."""
@@ -20,7 +21,7 @@ def get_lowest_flight_price():
             price_element = page.query_selector(".YMlIz.FpEdX")
             if price_element:
                 price_text = price_element.inner_text()
-                clean_price = int(price_text.replace('₩', '').replace(',', '').strip())
+                clean_price = int(price_text.replace('\u20a9', '').replace(',', '').strip())
                 return clean_price
             else:
                 return None
@@ -30,33 +31,29 @@ def get_lowest_flight_price():
         finally:
             browser.close()
 
-def update_pricing_history(current_price):
-    """수집된 가격을 타임스탬프와 함께 JSON 파일에 누적합니다."""
-    seoul_tz = pytz.timezone('Asia/Seoul')
-    now = datetime.now(seoul_tz)
-    day_of_week = now.strftime("%A")
-    hour_of_day = now.strftime("%H")
-    new_data_point = {
-        "timestamp": now.isoformat(),
-        "day_of_week": day_of_week,
-        "hour_of_day": int(hour_of_day),
-        "price_krw": current_price
-    }
-    history_data = []
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            try:
-                history_data = json.load(f)
-            except json.JSONDecodeError:
-                history_data = []
-    history_data.append(new_data_point)
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(history_data, f, ensure_ascii=False, indent=4)
-    print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] 최저가 업데이트 완료: {current_price}원")
 
+# 메인 실행 블록: 크롤링 결과를 파일에 저장
 if __name__ == "__main__":
     price = get_lowest_flight_price()
-    if price:
-        update_pricing_history(price)
+    if price is not None:
+        now = datetime.now(pytz.timezone("Asia/Seoul"))
+        record = {
+            "timestamp": now.isoformat(),
+            "day_of_week": ["월","화","수","목","금","토","일"][now.weekday()],
+            "hour_of_day": now.hour,
+            "price_krw": price
+        }
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                except Exception:
+                    data = []
+        else:
+            data = []
+        data.append(record)
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"Saved: {record}")
     else:
-        print("가격을 가져오지 못했습니다.")
+        print("Failed to get price.")

@@ -29,12 +29,12 @@ jobs:
           playwright install chromium
 
       - name: Run Price Crawler
-        run: python flight_crawler.py
+        run: python crawler/flight_crawler.py
 
       - name: Commit and Push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add flight_pricing_history.json
+          git add crawler/flight_pricing_history.json
           # 변경사항이 있을 때만 커밋 (에러 방지)
           git diff --quiet && git diff --staged --quiet || (git commit -m "Update flight price history [$(date)]" && git push)

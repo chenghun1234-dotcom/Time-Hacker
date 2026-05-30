@@ -39,6 +39,9 @@ jobs:
       - name: Install dependencies
         run: cd frontend && flutter pub get
 
+      - name: Copy latest pricing history to web directory
+        run: cp crawler/flight_pricing_history.json frontend/web/flight_pricing_history.json
+
       - name: Build web
         run: cd frontend && flutter build web
 
